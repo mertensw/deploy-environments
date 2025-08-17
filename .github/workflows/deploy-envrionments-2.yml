@@ -1,0 +1,44 @@
+name: Deploy Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_int:
+        description: "Skip INT deployment"
+        required: false
+        default: "false"
+      skip_acc:
+        description: "Skip ACC deployment"
+        required: false
+        default: "false"
+      skip_prd:
+        description: "Skip PRD deployment"
+        required: false
+        default: "false"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1 # ensures jobs run sequentially in matrix order
+      matrix:
+        env: [ dev, int, acc, prd ]
+
+    name: Deploy ${{ matrix.env }}
+    environment: ${{ matrix.env }}
+
+    steps:
+    - name: Deploy
+      if: |
+        (matrix.env == 'dev') ||
+        (matrix.env == 'int' && inputs.skip_int != 'true') ||
+        (matrix.env == 'acc' && inputs.skip_acc != 'true') ||
+        (matrix.env == 'prd' && inputs.skip_prd != 'true')
+      run: echo "Deploying to ${{ matrix.env }}"
+
+    - name: Skipped
+      if: |
+        (matrix.env == 'int' && inputs.skip_int == 'true') ||
+        (matrix.env == 'acc' && inputs.skip_acc == 'true') ||
+        (matrix.env == 'prd' && inputs.skip_prd == 'true')
+      run: echo "Skipping ${{ matrix.env }}"

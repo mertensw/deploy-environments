@@ -1,0 +1,83 @@
+name: Deploy Pipeline 3
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_int:
+        description: "Skip INT deployment"
+        required: false
+        default: "false"
+      skip_acc:
+        description: "Skip ACC deployment"
+        required: false
+        default: "false"
+      skip_prd:
+        description: "Skip PRD deployment"
+        required: false
+        default: "false"
+
+jobs:
+  # --- DEV ---
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+    - name: Deploy to DEV
+      run: echo "Deploying to DEV"
+
+  done-dev:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    steps:
+    - run: echo "DEV complete"
+
+  # --- INT ---
+  deploy-int:
+    if: ${{ inputs.skip_int != 'true' }}
+    needs: done-dev
+    runs-on: ubuntu-latest
+    environment: int
+    steps:
+    - name: Deploy to INT
+      run: echo "Deploying to INT"
+
+  done-int:
+    runs-on: ubuntu-latest
+    needs: [ done-dev, deploy-int ]
+    if: always() # always runs, even if deploy-int was skipped
+    steps:
+    - run: echo "INT stage complete (skipped or deployed)"
+
+  # --- ACC ---
+  deploy-acc:
+    if: ${{ inputs.skip_acc != 'true' }}
+    needs: done-int
+    runs-on: ubuntu-latest
+    environment: acc
+    steps:
+    - name: Deploy to ACC
+      run: echo "Deploying to ACC"
+
+  done-acc:
+    runs-on: ubuntu-latest
+    needs: [ done-int, deploy-acc ]
+    if: always()
+    steps:
+    - run: echo "ACC stage complete (skipped or deployed)"
+
+  # --- PRD ---
+  deploy-prd:
+    if: ${{ inputs.skip_prd != 'true' }}
+    needs: done-acc
+    runs-on: ubuntu-latest
+    environment: prd
+    steps:
+    - name: Deploy to PRD
+      run: echo "Deploying to PRD"
+
+  done-prd:
+    runs-on: ubuntu-latest
+    needs: [ done-acc, deploy-prd ]
+    if: always()
+    steps:
+    - run: echo "PRD stage complete (skipped or deployed)"
