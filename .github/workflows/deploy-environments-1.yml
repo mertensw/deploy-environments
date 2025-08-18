@@ -4,25 +4,46 @@ on:
   workflow_dispatch:
     inputs:
       skip_int:
+        type: boolean
         description: "Skip INT deployment"
-        required: false
-        default: "false"
+        default: false
       skip_acc:
+        type: boolean
         description: "Skip ACC deployment"
-        required: false
-        default: "false"
+        default: false
       skip_prd:
+        type: boolean
         description: "Skip PRD deployment"
-        required: false
-        default: "false"
+        default: false
 
 jobs:
+  # --- LOG INPUTS ---
+  log-inputs:
+    name: Log input parameters
+    runs-on: ubuntu-latest
+    steps:
+    - name: Log workflow inputs
+      run: |
+        echo "Skip INT: ${{ inputs.skip_int }}"
+        echo "Skip ACC: ${{ inputs.skip_acc }}"
+        echo "Skip PRD: ${{ inputs.skip_prd }}"
+    - name: Validate inputs
+      run: |
+        if [ "${{ inputs.skip_int }}" = "true" ] && \
+           [ "${{ inputs.skip_acc }}" = "true" ] && \
+           [ "${{ inputs.skip_prd }}" = "true" ]; then
+          echo "❌ All environments are skipped! Aborting..."
+          exit 1
+        fi
+
   # --- DEV ---
   deploy-dev:
+    name: Deploy to DEV
+    needs: log-inputs
     runs-on: ubuntu-latest
     environment: dev
     steps:
-    - name: Deploy to DEV
+    - name: Deploy
       run: echo "Deploying to DEV"
     - name: Done marker
       if: always()
@@ -30,15 +51,16 @@ jobs:
 
   # --- INT ---
   deploy-int:
+    name: Deploy to INT
     needs: deploy-dev
     runs-on: ubuntu-latest
     environment: int
     steps:
     - name: Maybe skip
-      if: ${{ inputs.skip_int == 'true' }}
+      if: ${{ inputs.skip_int }}
       run: echo "Skipping INT"
-    - name: Deploy to INT
-      if: ${{ inputs.skip_int != 'true' }}
+    - name: Deploy
+      if: ${{ !inputs.skip_int }}
       run: echo "Deploying to INT"
     - name: Done marker
       if: always()
@@ -46,15 +68,16 @@ jobs:
 
   # --- ACC ---
   deploy-acc:
+    name: Deploy to ACC
     needs: deploy-int
     runs-on: ubuntu-latest
     environment: acc
     steps:
     - name: Maybe skip
-      if: ${{ inputs.skip_acc == 'true' }}
+      if: ${{ inputs.skip_acc }}
       run: echo "Skipping ACC"
-    - name: Deploy to ACC
-      if: ${{ inputs.skip_acc != 'true' }}
+    - name: Deploy
+      if: ${{ !inputs.skip_acc }}
       run: echo "Deploying to ACC"
     - name: Done marker
       if: always()
@@ -62,16 +85,32 @@ jobs:
 
   # --- PRD ---
   deploy-prd:
+    name: Deploy to PRD
     needs: deploy-acc
     runs-on: ubuntu-latest
     environment: prd
     steps:
     - name: Maybe skip
-      if: ${{ inputs.skip_prd == 'true' }}
+      if: ${{ inputs.skip_prd }}
       run: echo "Skipping PRD"
-    - name: Deploy to PRD
-      if: ${{ inputs.skip_prd != 'true' }}
+    - name: Deploy
+      if: ${{ !inputs.skip_prd }}
       run: echo "Deploying to PRD"
     - name: Done marker
       if: always()
       run: echo "PRD complete (skipped or deployed)"
+
+  # --- SUMMARY ---
+  summary:
+    name: Deployment Summary
+    needs: deploy-prd
+    runs-on: ubuntu-latest
+    steps:
+    - name: Write summary
+      run: |
+        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- DEV: ✅ always deployed" >> $GITHUB_STEP_SUMMARY
+        echo "- INT: $([[ "${{ inputs.skip_int }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
+        echo "- ACC: $([[ "${{ inputs.skip_acc }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
+        echo "- PRD: $([[ "${{ inputs.skip_prd }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
