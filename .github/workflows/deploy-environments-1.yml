@@ -58,7 +58,7 @@ jobs:
         echo "| Production Support (PSU)| $([[ "${{ inputs.skip-psu }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
 
   deploy-dev:
-    name: Deploy to Development (DEV)
+    name: Deploy to DEV
     needs: validate-deployment-plan
     runs-on: ubuntu-latest
     environment: dev
@@ -71,7 +71,7 @@ jobs:
       run: echo "Deploy complete (skipped or deployed)"
 
   deploy-sys:
-    name: Deploy to System Testing (SYS)
+    name: Deploy to SYS
     needs: deploy-dev
     runs-on: ubuntu-latest
     environment: sys
@@ -84,7 +84,7 @@ jobs:
       run: echo "Deploy complete (skipped or deployed)"
 
   deploy-int:
-    name: Deploy to Integration (INT)
+    name: Deploy to INT
     needs: deploy-sys
     runs-on: ubuntu-latest
     environment: int
@@ -92,12 +92,9 @@ jobs:
     - name: Deploy
       if: ${{ !inputs.skip-int }}
       run: echo "TODO Deploying to INT"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
 
   deploy-acc:
-    name: Deploy to Acceptance (ACC)
+    name: Deploy to ACC
     needs: deploy-int
     runs-on: ubuntu-latest
     environment: acc
@@ -110,7 +107,7 @@ jobs:
       run: echo "Deploy complete (skipped or deployed)"
 
   deploy-prd:
-    name: Deploy to Production (PRD)
+    name: Deploy to PRD
     needs: deploy-acc
     runs-on: ubuntu-latest
     environment: prd
@@ -123,7 +120,7 @@ jobs:
       run: echo "Deploy complete (skipped or deployed)"
 
   deploy-psu:
-    name: Deploy to Production Support (PSU)
+    name: Deploy to PSU
     needs: deploy-prd
     runs-on: ubuntu-latest
     environment: psu
