@@ -57,18 +57,23 @@ jobs:
         echo "| Production (PRD)       | $([[ "${{ inputs.skip-prd }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
         echo "| Production Support (PSU)| $([[ "${{ inputs.skip-psu }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
 
+  create-tag:
+    name: Create deployment tag
+    needs: validate-deployment-plan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create tag
+      run: echo "TODO Create tag"
+
   deploy-dev:
     name: Deploy to DEV
-    needs: validate-deployment-plan
+    needs: create-tag
     runs-on: ubuntu-latest
     environment: dev
     steps:
     - name: Deploy
       if: ${{ !inputs.skip-dev }}
       run: echo "TODO Deploying to DEV"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
 
   deploy-sys:
     name: Deploy to SYS
@@ -79,9 +84,6 @@ jobs:
     - name: Deploy
       if: ${{ !inputs.skip-sys }}
       run: echo "TODO Deploying to SYS"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
 
   deploy-int:
     name: Deploy to INT
@@ -102,9 +104,6 @@ jobs:
     - name: Deploy
       if: ${{ !inputs.skip-acc }}
       run: echo "TODO Deploying to ACC"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
 
   deploy-prd:
     name: Deploy to PRD
@@ -115,9 +114,6 @@ jobs:
     - name: Deploy
       if: ${{ !inputs.skip-prd }}
       run: echo "TODO Deploying to PRD"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
 
   deploy-psu:
     name: Deploy to PSU
@@ -128,6 +124,3 @@ jobs:
     - name: Deploy
       if: ${{ !inputs.skip-psu }}
       run: echo "TODO Deploying to PSU"
-    - name: Done marker
-      if: always()
-      run: echo "Deploy complete (skipped or deployed)"
