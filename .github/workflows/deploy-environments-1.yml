@@ -48,12 +48,14 @@ jobs:
       run: |
         echo "## Deployment Plan Overview" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- Development (DEV): $([[ "${{ inputs.skip-dev }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
-        echo "- System Testing (SYS): $([[ "${{ inputs.skip-sys }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
-        echo "- Integration (INT): $([[ "${{ inputs.skip-int }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
-        echo "- Acceptance (ACC): $([[ "${{ inputs.skip-acc }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
-        echo "- Production (PRD): $([[ "${{ inputs.skip-prd }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
-        echo "- Production Support (PSU): $([[ "${{ inputs.skip-psu }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "| Environment            | Action |" >> $GITHUB_STEP_SUMMARY
+        echo "|------------------------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Development (DEV)      | $([[ "${{ inputs.skip-dev }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
+        echo "| System Testing (SYS)   | $([[ "${{ inputs.skip-sys }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
+        echo "| Integration (INT)      | $([[ "${{ inputs.skip-int }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
+        echo "| Acceptance (ACC)       | $([[ "${{ inputs.skip-acc }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
+        echo "| Production (PRD)       | $([[ "${{ inputs.skip-prd }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
+        echo "| Production Support (PSU)| $([[ "${{ inputs.skip-psu }}" == "true" ]] && echo "⏭️ Skip" || echo "✅ Deploy") |" >> $GITHUB_STEP_SUMMARY
 
   deploy-dev:
     name: Deploy to Development (DEV)
