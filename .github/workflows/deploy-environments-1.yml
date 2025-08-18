@@ -35,6 +35,14 @@ jobs:
           echo "❌ All environments are skipped! Aborting..."
           exit 1
         fi
+    - name: Write summary
+      run: |
+        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- DEV: ✅ always deployed" >> $GITHUB_STEP_SUMMARY
+        echo "- INT: $([[ "${{ inputs.skip_int }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
+        echo "- ACC: $([[ "${{ inputs.skip_acc }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
+        echo "- PRD: $([[ "${{ inputs.skip_prd }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
 
   # --- DEV ---
   deploy-dev:
@@ -99,18 +107,3 @@ jobs:
     - name: Done marker
       if: always()
       run: echo "PRD complete (skipped or deployed)"
-
-  # --- SUMMARY ---
-  summary:
-    name: Deployment Summary
-    needs: deploy-prd
-    runs-on: ubuntu-latest
-    steps:
-    - name: Write summary
-      run: |
-        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- DEV: ✅ always deployed" >> $GITHUB_STEP_SUMMARY
-        echo "- INT: $([[ "${{ inputs.skip_int }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
-        echo "- ACC: $([[ "${{ inputs.skip_acc }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
-        echo "- PRD: $([[ "${{ inputs.skip_prd }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
