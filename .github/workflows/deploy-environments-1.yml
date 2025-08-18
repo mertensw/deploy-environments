@@ -3,107 +3,132 @@ name: Deploy Pipeline 1
 on:
   workflow_dispatch:
     inputs:
-      skip_int:
+      skip-dev:
+        type: boolean
+        description: "Skip DEV deployment"
+        default: false
+      skip-sys:
+        type: boolean
+        description: "Skip SYS deployment"
+        default: false
+      skip-int:
         type: boolean
         description: "Skip INT deployment"
         default: false
-      skip_acc:
+      skip-acc:
         type: boolean
         description: "Skip ACC deployment"
         default: false
-      skip_prd:
+      skip-prd:
         type: boolean
         description: "Skip PRD deployment"
         default: false
+      skip-psu:
+        type: boolean
+        description: "Skip PSU deployment"
+        default: false
 
 jobs:
-  # --- LOG INPUTS ---
-  log-inputs:
-    name: Log input parameters
+  validate-deployment-plan:
+    name: Validate deployment plan
     runs-on: ubuntu-latest
     steps:
-    - name: Log workflow inputs
-      run: |
-        echo "Skip INT: ${{ inputs.skip_int }}"
-        echo "Skip ACC: ${{ inputs.skip_acc }}"
-        echo "Skip PRD: ${{ inputs.skip_prd }}"
     - name: Validate inputs
       run: |
-        if [ "${{ inputs.skip_int }}" = "true" ] && \
-           [ "${{ inputs.skip_acc }}" = "true" ] && \
-           [ "${{ inputs.skip_prd }}" = "true" ]; then
-          echo "❌ All environments are skipped! Aborting..."
+        if [ "${{ inputs.skip-dev }}" = "true" ] && \
+           [ "${{ inputs.skip-sys }}" = "true" ] && \
+           [ "${{ inputs.skip-int }}" = "true" ] && \
+           [ "${{ inputs.skip-acc }}" = "true" ] && \
+           [ "${{ inputs.skip-prd }}" = "true" ] && \
+           [ "${{ inputs.skip-psu }}" = "true" ]; then
+          echo "All environments are skipped! Stopping workflow..."
           exit 1
         fi
-    - name: Write summary
+    - name: Write summary deployment plan
       run: |
-        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "## Deployment Plan Overview" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- DEV: ✅ always deployed" >> $GITHUB_STEP_SUMMARY
-        echo "- INT: $([[ "${{ inputs.skip_int }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
-        echo "- ACC: $([[ "${{ inputs.skip_acc }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
-        echo "- PRD: $([[ "${{ inputs.skip_prd }}" == "true" ]] && echo "⏭️ skipped" || echo "✅ deployed")" >> $GITHUB_STEP_SUMMARY
+        echo "- Development (DEV): $([[ "${{ inputs.skip-dev }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "- System Testing (SYS): $([[ "${{ inputs.skip-sys }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "- Integration (INT): $([[ "${{ inputs.skip-int }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "- Acceptance (ACC): $([[ "${{ inputs.skip-acc }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "- Production (PRD): $([[ "${{ inputs.skip-prd }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
+        echo "- Production Support (PSU): $([[ "${{ inputs.skip-psu }}" == "true" ]] && echo "⏭️ plan to skip" || echo "✅ plan to deploy")" >> $GITHUB_STEP_SUMMARY
 
-  # --- DEV ---
   deploy-dev:
-    name: Deploy to DEV
-    needs: log-inputs
+    name: Deploy to Development (DEV)
+    needs: validate-deployment-plan
     runs-on: ubuntu-latest
     environment: dev
     steps:
     - name: Deploy
-      run: echo "Deploying to DEV"
+      if: ${{ !inputs.skip-dev }}
+      run: echo "TODO Deploying to DEV"
     - name: Done marker
       if: always()
-      run: echo "DEV complete (always runs)"
+      run: echo "Deploy complete (skipped or deployed)"
 
-  # --- INT ---
-  deploy-int:
-    name: Deploy to INT
+  deploy-sys:
+    name: Deploy to System Testing (SYS)
     needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: sys
+    steps:
+    - name: Deploy
+      if: ${{ !inputs.skip-sys }}
+      run: echo "TODO Deploying to SYS"
+    - name: Done marker
+      if: always()
+      run: echo "Deploy complete (skipped or deployed)"
+
+  deploy-int:
+    name: Deploy to Integration (INT)
+    needs: deploy-sys
     runs-on: ubuntu-latest
     environment: int
     steps:
-    - name: Maybe skip
-      if: ${{ inputs.skip_int }}
-      run: echo "Skipping INT"
     - name: Deploy
-      if: ${{ !inputs.skip_int }}
-      run: echo "Deploying to INT"
+      if: ${{ !inputs.skip-int }}
+      run: echo "TODO Deploying to INT"
     - name: Done marker
       if: always()
-      run: echo "INT complete (skipped or deployed)"
+      run: echo "Deploy complete (skipped or deployed)"
 
-  # --- ACC ---
   deploy-acc:
-    name: Deploy to ACC
+    name: Deploy to Acceptance (ACC)
     needs: deploy-int
     runs-on: ubuntu-latest
     environment: acc
     steps:
-    - name: Maybe skip
-      if: ${{ inputs.skip_acc }}
-      run: echo "Skipping ACC"
     - name: Deploy
-      if: ${{ !inputs.skip_acc }}
-      run: echo "Deploying to ACC"
+      if: ${{ !inputs.skip-acc }}
+      run: echo "TODO Deploying to ACC"
     - name: Done marker
       if: always()
-      run: echo "ACC complete (skipped or deployed)"
+      run: echo "Deploy complete (skipped or deployed)"
 
-  # --- PRD ---
   deploy-prd:
-    name: Deploy to PRD
+    name: Deploy to Production (PRD)
     needs: deploy-acc
     runs-on: ubuntu-latest
     environment: prd
     steps:
-    - name: Maybe skip
-      if: ${{ inputs.skip_prd }}
-      run: echo "Skipping PRD"
     - name: Deploy
-      if: ${{ !inputs.skip_prd }}
-      run: echo "Deploying to PRD"
+      if: ${{ !inputs.skip-prd }}
+      run: echo "TODO Deploying to PRD"
     - name: Done marker
       if: always()
-      run: echo "PRD complete (skipped or deployed)"
+      run: echo "Deploy complete (skipped or deployed)"
+
+  deploy-psu:
+    name: Deploy to Production Support (PSU)
+    needs: deploy-prd
+    runs-on: ubuntu-latest
+    environment: psu
+    steps:
+    - name: Deploy
+      if: ${{ !inputs.skip-psu }}
+      run: echo "TODO Deploying to PSU"
+    - name: Done marker
+      if: always()
+      run: echo "Deploy complete (skipped or deployed)"
