@@ -1,0 +1,88 @@
+name: Deploy Pipeline for Production
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    name: Deploy to DEV
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy DEV
+        run: echo "Deploying to DEV"
+
+  deploy-sys:
+    name: Deploy to SYS
+    runs-on: ubuntu-latest
+    environment: sys
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy SYS
+        run: echo "Deploying to SYS"
+
+  deploy-int:
+    name: Deploy to INT
+    runs-on: ubuntu-latest
+    environment: int
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy INT
+        run: echo "Deploying to INT"
+
+  deploy-acc:
+    name: Deploy to ACC
+    runs-on: ubuntu-latest
+    environment: acc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy ACC
+        run: echo "Deploying to ACC"
+
+  deploy-prd:
+    name: Deploy to PRD
+    runs-on: ubuntu-latest
+    environment: prd
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy PRD
+        run: echo "Deploying to PRD"
+
+  deploy-psu:
+    name: Deploy to PSU
+    runs-on: ubuntu-latest
+    environment: psu
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy PSU
+        run: echo "Deploying to PSU"
